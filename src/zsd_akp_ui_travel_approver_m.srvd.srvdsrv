@@ -1,0 +1,5 @@
+@EndUserText.label: 'Service definition for Travel Approver app'
+define service ZSD_AKP_UI_TRAVEL_APPROVER_M {
+  expose ZC_AKP_TRAVEL_APPROVER_M   as Travel;
+  expose ZC_AKP_BOOOKING_APPROVER_M as Booking;
+}

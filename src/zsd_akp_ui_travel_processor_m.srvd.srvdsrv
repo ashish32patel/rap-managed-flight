@@ -1,0 +1,6 @@
+@EndUserText.label: 'Service definition for Travel Processor app'
+define service ZSD_AKP_UI_TRAVEL_PROCESSOR_M {
+  expose ZC_AKP_TRAVEL_PROCESSOR_M    as Travel;
+  expose ZC_AKP_BOOOKING_PROCESSOR_M  as Booking;
+  expose ZC_AKP_BOOKSUPPL_PROCESSOR_M as BookingSupplement;
+}
