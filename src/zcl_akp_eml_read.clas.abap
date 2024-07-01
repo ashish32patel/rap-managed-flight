@@ -139,7 +139,7 @@ CLASS ZCL_AKP_EML_READ IMPLEMENTATION.
     ENTITY Booking
     ALL FIELDS
     WITH VALUE #( ( %key-TravelId = '00005000'
-                    %key-BookingId = '0001' ) )
+                    %key-BookingId = '0010' ) )
     RESULT DATA(lt_bookings)
 
     FAILED DATA(lt_failed_long).

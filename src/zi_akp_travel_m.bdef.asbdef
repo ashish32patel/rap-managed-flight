@@ -1,9 +1,10 @@
-managed; //implementation in class zbp_i_akp_travel_m unique;
+managed implementation in class zbp_i_akp_travel_m unique;
 strict ( 2 );
 
 define behavior for ZI_AKP_TRAVEL_M alias Travel
 implementation in class zbp_i_akp_travel_m unique
 persistent table zakp_travel_m
+with additional save
 lock master
 authorization master ( instance )
 etag master LastChangedAt
@@ -103,7 +104,7 @@ early numbering
     //..is enabled/disabled automatically, without needing to refresh the page.
     field BookingStatus affects permissions ( create _BookingSupplement );
     //When the field FlightPrice/CurrencyCode in Child entity is modified, this will trigger the determination calculateTotalPrice.
-    //Side effects will trigger the refresh of field TotalPrice from the Root entity to show the calculated total every time user enters a value at the child instance.
+    //Side effects will trigger withthe refresh of field TotalPrice from the Root entity to show the calculated total every time user enters a value at the child instance.
     field FlightPrice affects field _Travel.TotalPrice;
     field CurrencyCode affects field _Travel.TotalPrice;
   }
@@ -127,7 +128,10 @@ early numbering
 
 define behavior for ZI_AKP_BOOKSUPPL_M alias BookingSuppl
 implementation in class zbp_i_akp_bookingSuppl_m unique
-persistent table zakp_booksuppl_m
+//persistent table zakp_booksuppl_m   //persistent table can't be defined for unmanaged save
+with unmanaged save with full data
+//with full data- used to handover full instance data to save_modified
+//      however only the changed fields are flagged in %control structure
 lock dependent by _Travel
 authorization dependent by _Travel
 etag master LastChangedAt

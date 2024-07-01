@@ -1,3 +1,151 @@
+CLASS lsc_zi_akp_travel_m DEFINITION INHERITING FROM cl_abap_behavior_saver.
+
+  PROTECTED SECTION.
+
+    METHODS save_modified REDEFINITION.
+
+ENDCLASS.
+
+CLASS lsc_zi_akp_travel_m IMPLEMENTATION.
+
+  METHOD save_modified.
+********************************************************************************
+* Implements additional save
+********************************************************************************
+    DATA travel_log_delete TYPE STANDARD TABLE OF zakp_log_trvl_m.
+    DATA travel_log_create TYPE STANDARD TABLE OF zakp_log_trvl_m.
+    DATA travel_log_update TYPE STANDARD TABLE OF zakp_log_trvl_m.
+
+    " (1) Get instance data of all instances that have been created
+    IF create-travel IS NOT INITIAL.
+      LOOP AT create-travel ASSIGNING FIELD-SYMBOL(<travel_create>).
+
+        GET TIME STAMP FIELD DATA(ts1).
+
+        " If new value of the booking_fee field created
+        IF <travel_create>-%control-BookingFee = cl_abap_behv=>flag_changed.
+          APPEND VALUE zakp_log_trvl_m(
+                      travelid = <travel_create>-TravelId
+                      changing_operation = 'CREATE'
+                      created_at = ts1
+                      change_id = cl_system_uuid=>create_uuid_x16_static( )
+                      changed_field_name = 'booking_fee'
+                      changed_value = <travel_create>-BookingFee
+           ) TO travel_log_create.
+        ENDIF.
+
+        " If new value of the overall_status field created
+        IF <travel_create>-%control-OverallStatus = cl_abap_behv=>flag_changed.
+          APPEND VALUE zakp_log_trvl_m(
+                      travelid = <travel_create>-TravelId
+                      changing_operation = 'CREATE'
+                      created_at = ts1
+                      change_id = cl_system_uuid=>create_uuid_x16_static( )
+                      changed_field_name = 'overall_status'
+                      changed_value = <travel_create>-OverallStatus
+           ) TO travel_log_create.
+        ENDIF.
+
+        " IF  <travel_create>-%control-...
+
+      ENDLOOP.
+
+      " Inserts rows specified in travel_log_create into the DB table zakp_log_trvl_m
+      INSERT zakp_log_trvl_m FROM TABLE @travel_log_create.
+
+    ENDIF.
+
+    " (2) Get instance data of all instances that have been updated during the transaction
+
+    IF update-travel IS NOT INITIAL.
+      LOOP AT update-travel ASSIGNING FIELD-SYMBOL(<travel_update>).
+
+        GET TIME STAMP FIELD ts1.
+
+
+        IF <travel_update>-%control-CustomerId = if_abap_behv=>mk-on.
+          APPEND VALUE zakp_log_trvl_m(
+                      travelid = <travel_update>-TravelId
+                      changing_operation = 'UPDATE'
+                      created_at = ts1
+                      change_id = cl_system_uuid=>create_uuid_x16_static( )
+                      changed_field_name = 'customer_id'
+                      changed_value = <travel_update>-CustomerId
+           ) TO travel_log_update.
+        ENDIF.
+
+
+        IF <travel_update>-%control-description = cl_abap_behv=>flag_changed.
+          APPEND VALUE zakp_log_trvl_m(
+                      travelid = <travel_update>-TravelId
+                      changing_operation = 'UPDATE'
+                      created_at = ts1
+                      change_id = cl_system_uuid=>create_uuid_x16_static( )
+                      changed_field_name = 'description'
+                      changed_value = <travel_update>-description
+           ) TO travel_log_update.
+        ENDIF.
+
+        " IF  <travel_update>-%control-...
+
+      ENDLOOP.
+
+      " Inserts rows specified in travel_log_update into the DB table zakp_log_trvl_m
+      INSERT zakp_log_trvl_m FROM TABLE @travel_log_update.
+
+    ENDIF.
+
+
+    " (3) Get keys of all travel instances that have been deleted during the transaction
+    IF delete-travel IS NOT INITIAL.
+      LOOP AT delete-travel ASSIGNING FIELD-SYMBOL(<travel_delete>).
+
+        GET TIME STAMP FIELD ts1.
+
+        APPEND VALUE zakp_log_trvl_m(
+            travelid = <travel_delete>-TravelId
+            changing_operation = 'DELETE'
+            created_at = ts1
+            change_id = cl_system_uuid=>create_uuid_x16_static( )
+         ) TO travel_log_delete.
+
+
+      ENDLOOP.
+
+      " Inserts rows specified in travel_log_delete into the DB table zakp_log_trvl_m
+      INSERT zakp_log_trvl_m FROM TABLE @travel_log_delete.
+    ENDIF.
+
+********************************************************************************
+*
+* Implements unmanaged save     ---Please also refer to class /DMO/BP_TRAVEL_M
+*
+********************************************************************************
+    DATA booksuppls_db TYPE STANDARD TABLE OF zakp_booksuppl_m.
+
+    " (1) Get instance data of all instances that have been created
+    IF create-bookingsuppl IS NOT INITIAL.
+      booksuppls_db = CORRESPONDING #( create-bookingsuppl MAPPING FROM ENTITY ).
+      INSERT zakp_booksuppl_m FROM TABLE @booksuppls_db. " Any legacy code- BAPI,FN module etc..
+    ENDIF.
+
+    " (2) Get instance data of all instances that have been updated during the transaction
+    IF update-bookingsuppl IS NOT INITIAL.
+      "To optimize this we can only update fields marked in %control --refer class /DMO/BP_TRAVEL_M
+      booksuppls_db = CORRESPONDING #( update-bookingsuppl MAPPING FROM ENTITY ).
+      UPDATE zakp_booksuppl_m FROM TABLE @booksuppls_db. " Any legacy code- BAPI,FN module etc..
+    ENDIF.
+
+    " (3) Get keys of all travel instances that have been deleted during the transaction
+    IF delete-bookingsuppl IS NOT INITIAL.
+      booksuppls_db = CORRESPONDING #( delete-bookingsuppl MAPPING FROM ENTITY ).
+      DELETE zakp_booksuppl_m FROM TABLE @booksuppls_db. " Any legacy code- BAPI,FN module etc..
+    ENDIF.
+
+  ENDMETHOD.
+
+ENDCLASS.
+
 CLASS lhc_Travel DEFINITION INHERITING FROM cl_abap_behavior_handler.
   PRIVATE SECTION.
 

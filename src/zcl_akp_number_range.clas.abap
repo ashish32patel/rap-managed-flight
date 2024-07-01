@@ -14,11 +14,14 @@ CLASS zcl_akp_number_range DEFINITION
     METHODS get_latest_number
       IMPORTING
         i_out TYPE REF TO if_oo_adt_classrun_out.
+    METHODS reset_number_range
+      IMPORTING
+        i_out TYPE REF TO if_oo_adt_classrun_out.
 ENDCLASS.
 
 
 
-CLASS ZCL_AKP_NUMBER_RANGE IMPLEMENTATION.
+CLASS zcl_akp_number_range IMPLEMENTATION.
 
 
   METHOD if_oo_adt_classrun~main.
@@ -27,7 +30,28 @@ CLASS ZCL_AKP_NUMBER_RANGE IMPLEMENTATION.
 
 *    get_latest_number( out ).   "---->Use for test after creating number range interval in above step.
 
+    reset_number_range( out ).   "Reset interval for Number range object to 5000
+
   ENDMETHOD.
+
+  METHOD reset_number_range.
+
+    TRY.
+        cl_numberrange_intervals=>update(
+          EXPORTING
+            interval  = VALUE #( ( nrrangenr = '01' fromnumber = '00005000' tonumber = '99999999' )  )
+            object    = 'ZAKP_NR_TR'
+        ).
+      CATCH cx_number_ranges INTO DATA(lo_exc).
+        "handle exception
+        i_out->write( lo_exc->get_text(  ) ).
+    ENDTRY.
+
+    i_out->write( |Number range reset done.| ).
+
+  ENDMETHOD.
+
+
 
 
   METHOD get_latest_number.
